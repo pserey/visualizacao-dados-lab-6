@@ -142,20 +142,24 @@
               formatter: function(params) {
                 let tooltipText = `<b>${params[0].name}</b><br/>`;
                 
-                params.forEach(param => {
-                  if (['Rendimentos Tributáveis', 'Rendimentos com Tributação Exclusiva', 'Rendimentos Isentos'].includes(param.seriesName)) {
-                    tooltipText += `${param.seriesName}: R$ ${(param.value / 1000).toFixed(2)} bilhões<br/>`;
-                  }
-                });
+                const rendimentosIndex = params.findIndex(param => param.seriesName === 'Rendimentos Tributáveis');
+                if (rendimentosIndex >= 0) {
+                  tooltipText += `Rendimentos: R$ ${(params[rendimentosIndex].value / 1000).toFixed(2)} bilhões<br/>`;
+                }
+                
+                const taxRateIndex = params.findIndex(param => param.seriesName === 'Taxa Efetiva de Imposto');
+                if (taxRateIndex >= 0) {
+                  tooltipText += `Taxa Efetiva de Imposto: ${params[taxRateIndex].value.toFixed(2)}%<br/>`;
+                }
+                
+                const arrecadacaoEfetiva = (params[rendimentosIndex].value * params[taxRateIndex].value) / 100000;
+                if (arrecadacaoEfetiva >= 0) {
+                  tooltipText += `Arrecadação Efetiva: R$ ${arrecadacaoEfetiva.toFixed(2)} bilhões<br/>`
+                }
                 
                 const declarantesIndex = params.findIndex(param => param.seriesName === 'Quantidade de Declarantes');
                 if (declarantesIndex >= 0) {
                   tooltipText += `Quantidade de Declarantes: ${params[declarantesIndex].value.toLocaleString()} pessoas<br/>`;
-                }
-
-                const taxRateIndex = params.findIndex(param => param.seriesName === 'Taxa Efetiva de Imposto');
-                if (taxRateIndex >= 0) {
-                  tooltipText += `Taxa Efetiva de Imposto: ${params[taxRateIndex].value.toFixed(2)}%`;
                 }
                 
                 return tooltipText;
